@@ -1,4 +1,6 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { createHash } from "node:crypto"
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import type { ReleaseRequest } from "./inputs.ts"
@@ -51,6 +53,7 @@ const APP_NAME = "Yapr"
 const CARGO_TOML = "app/Cargo.toml"
 const CARGO_LOCK = "app/Cargo.lock"
 const ASSET_DIR = "dist"
+const CASK = "Casks/yapr.rb"
 
 function assetPath(version: string): string {
   return join(process.cwd(), ASSET_DIR, `${APP_NAME}-${version}.zip`)
@@ -126,16 +129,35 @@ async function commitsOnMain(run: CommandRunner, shas: readonly string[]): Promi
   }
 }
 
-async function highestStableForMajor(run: CommandRunner, version: ReleaseVersion): Promise<boolean> {
+async function highestStable(run: CommandRunner, version: ReleaseVersion, sameMajorOnly: boolean): Promise<boolean> {
   const tags = await git(run, ["tag", "--list"])
   const names = tags.stdout === "" ? [] : tags.stdout.split("\n")
   let highest: ReleaseVersion | null = version
   for (const name of names) {
     const parsed = parseVersion(name)
-    if (parsed === null || parsed.major !== version.major || parsed.rc !== null) continue
+    if (parsed === null || parsed.rc !== null) continue
+    if (sameMajorOnly && parsed.major !== version.major) continue
     if (compareVersions(parsed, highest) > 0) highest = parsed
   }
   return compareVersions(highest, version) === 0
+}
+
+async function releaseAssetSha256(run: CommandRunner, tag: string, version: string): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), "yapr-asset-"))
+  try {
+    const name = `${APP_NAME}-${version}.zip`
+    await gh(run, ["release", "download", tag, "--pattern", name, "--dir", dir])
+    const bytes = await readFile(join(dir, name))
+    return createHash("sha256").update(bytes).digest("hex")
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+}
+
+async function setCaskRelease(version: string, sha256: string): Promise<boolean> {
+  const versionChanged = await replaceVersion(CASK, /(\n {2}version ")[^"]+(")/, version)
+  const shaChanged = await replaceVersion(CASK, /(\n {2}sha256 ")[0-9a-f]{64}(")/, sha256)
+  return versionChanged || shaChanged
 }
 
 async function previousTagOnLine(run: CommandRunner, version: ReleaseVersion): Promise<string | null> {
@@ -180,7 +202,7 @@ async function collectNotes(run: CommandRunner, version: ReleaseVersion, line: s
 async function replaceVersion(path: string, pattern: RegExp, version: string): Promise<boolean> {
   const raw = await readFile(join(process.cwd(), path), "utf8")
   const match = pattern.exec(raw)
-  if (match === null) throw new Error(`no yapr version found in ${path}`)
+  if (match === null) throw new Error(`no ${pattern} match in ${path}`)
   const updated = raw.replace(pattern, `$1${version}$2`)
   if (updated === raw) return false
   await writeFile(join(process.cwd(), path), updated)
@@ -227,6 +249,16 @@ async function applyMutations(
         if (changed) {
           await git(run, ["add", CARGO_TOML, CARGO_LOCK])
           await git(run, ["commit", "-m", mutation.message])
+        }
+        break
+      }
+      case "update-cask": {
+        await git(run, ["fetch", "origin", "main"])
+        await git(run, ["checkout", "-B", "cask-update", "origin/main"])
+        if (await setCaskRelease(mutation.version, mutation.sha256)) {
+          await git(run, ["add", CASK])
+          await git(run, ["commit", "-m", `chore(cask): update yapr to ${mutation.version}`])
+          await git(run, ["push", "origin", "HEAD:refs/heads/main"])
         }
         break
       }
@@ -465,7 +497,9 @@ async function planPublish(
   const release = await releaseJson(run, tag)
   if (release === null) throw new Error(`GitHub release ${tag} does not exist`)
   if (!isDraftRelease(release)) throw new Error(`GitHub release ${tag} is not a draft`)
-  const moveAlias = request.version.rc === null && await highestStableForMajor(run, request.version)
+  const stable = request.version.rc === null
+  const moveAlias = stable && await highestStable(run, request.version, true)
+  const updateCask = stable && await highestStable(run, request.version, false)
   const mutations: Mutation[] = []
   if (moveAlias) {
     mutations.push({
@@ -479,8 +513,17 @@ async function planPublish(
     kind: "publish-release",
     summary: `publish GitHub release ${tag}`,
     tag,
-    latest: moveAlias ? "true" : "false",
+    latest: updateCask ? "true" : "false",
   })
+  if (updateCask) {
+    const sha256 = await releaseAssetSha256(run, tag, version)
+    mutations.push({
+      kind: "update-cask",
+      summary: `set ${CASK} to ${version} (sha256 ${sha256}) on main`,
+      version,
+      sha256,
+    })
+  }
   return {
     operation: "publish",
     dryRun: request.dryRun,

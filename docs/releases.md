@@ -47,7 +47,7 @@ Read the plan in the run summary, then re-run with `-f dry_run=false`. Dispatch 
 | `cut` | `version` (patch `0`) | Creates `release/vX.Y` from `main`. |
 | `backport` | `release_line`, `commits` | Cherry-picks main SHAs and opens a squash PR into the line. |
 | `draft` | `release_line`, `version` | Sets the Cargo version, builds and signs `Yapr-X.Y.Z.zip`, then pushes the version commit, tags, and creates a draft GitHub Release with the zip. Nothing is pushed if the build fails. |
-| `publish` | `version`, `confirmation='publish <version>'` | Publishes the draft and moves major alias `X` for the highest stable of that major. |
+| `publish` | `version`, `confirmation='publish <version>'` | Publishes the draft and moves major alias `X` for the highest stable of that major. For the highest stable version overall, it marks the release as latest and commits the new version and zip checksum to `Casks/yapr.rb` on `main`. |
 | `cancel` | `version`, `confirmation='cancel <version>'` | Deletes an unpublished draft and its exact tag. |
 | `retire` | `release_line`, `confirmation='retire <release_line>'` | Deletes a release branch. Published tags stay. |
 | `restore` | `release_line` | Recreates a retired line at its highest stable tag. |
