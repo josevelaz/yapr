@@ -1,0 +1,37 @@
+{
+  "aec_algorithm_latency_ms": 14,
+  "aec_cpu_ms_per_audio_second": 0.6032288883394201,
+  "baseline_reference_rms": 0.0,
+  "capture_wall_ms": 25171,
+  "delay_correlation": 0.0,
+  "delay_ms": null,
+  "duration_s": 25.0239375,
+  "echo": {
+    "active": false
+  },
+  "live_chunks_equal_full_recording": true,
+  "max_reference_age_ms": 73.72704234148841,
+  "max_worker_buffer_ms": 173.85301338799763,
+  "mean_worker_buffer_ms": 161.25285267996333,
+  "mic_dropped": 0,
+  "mic_missing": 97,
+  "model": "microsoft/mai-transcribe-2",
+  "music": "none",
+  "music_reduction_db": 0.0,
+  "off": {
+    "text": "I'll show you 30 minutes of the front of the plane. First, we shift the rotation of our boat to aft. Then, we ride the lead beam and check the numbers. After that, we take the rest of the afternoon.",
+    "transcribe_ms": 1028,
+    "wer": 0.6216216216216216
+  },
+  "on": {
+    "text": "I'll show you 30 minutes of the front of the plane. First, we shift the rotation of our boat to aft. Then, we ride the lead beam and check the numbers. After that, we take the rest of the afternoon.",
+    "transcribe_ms": 784,
+    "wer": 0.6216216216216216
+  },
+  "reference_dropped": 0,
+  "reference_missing": 2834,
+  "script": "Okay so here is the plan for tomorrow. First we ship the dictation helper to the team. Then, um, we write the README and check the numbers. After that we take the rest of the afternoon off.",
+  "speech_offset_samples": 131582,
+  "speech_playback_gain": 0.35,
+  "speech_region_level_change_db": 0.0
+}

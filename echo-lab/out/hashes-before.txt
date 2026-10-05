@@ -1,0 +1,4 @@
+8ea611c7eeb5393134a14f3496716cb4085c27049bb173606c6e427c560e03ba  out/music-clean.wav
+99a07a984a5b3916b06c7825b77ae1d1aa46e5a042227ab732191e62404a61fe  out/speech-like-clean.wav
+e061400be69dde66fa1309c03901f0b3b49ac0c707b139d977d3d254e8d978ff  out/music-adaptive-clean.wav
+556684e17cff3406c60ea9c2a1c78a49cda7e25f2afe24cf6f029084539898bf  out/speech-like-adaptive-clean.wav

@@ -1,0 +1,10 @@
+{
+  "post_warmup_music_window_seconds": [
+    7.0310625,
+    8.0310625
+  ],
+  "post_warmup_music_reduction_db": 18.890329844299192,
+  "all_pre_speech_music_reduction_db": 4.041841211815374,
+  "speech_gain": 1.0,
+  "delay_ms": 14
+}

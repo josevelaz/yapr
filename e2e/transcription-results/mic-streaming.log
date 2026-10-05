@@ -1,0 +1,2 @@
+{"cleaned":false,"error":"Could not reach AI Gateway for cleanup. Your raw transcript was kept.","raw":"Can","streamed":true,"text":"Can","timings":{"cleanup_ms":18068,"transcribe_ms":55}}
+[HTTP 200]

@@ -1,0 +1,2 @@
+transcribe_ms=387
+Unknown or unsupported AI Gateway model: openai/gpt-4o-mini-transcribe is ineligible for Zero Data Retention (ZDR). This model retains data and cannot be used with ZDR configurations.

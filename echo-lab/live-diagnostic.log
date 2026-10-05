@@ -1,0 +1,10 @@
+mic=MacBook Pro Microphone config=SupportedStreamConfig { channels: 1, sample_rate: SampleRate(48000), buffer_size: Range { min: 15, max: 4096 }, sample_format: F32 }; system=48kHz stereo; delay hint=None
+READY
+ref packet: frames=320 age=104.621ms
+ref packet: frames=320 age=84.626ms
+ref packet: frames=320 age=64.627ms
+RMS mic=0.024133 (-32.35dBFS) ref=0.253537 (-11.92dBFS) clean=0.007042 (-43.05dBFS)
+after 3s warmup: apparent ERLE/reduction=10.79dB (valid ERLE only if all sound is far-end); AEC CPU=21.945ms/audio-second
+dropped callback/chunks: mic=0 ref=0; zero-filled samples: mic=0 ref=195623
+ref input: packets=1105, samples=353600, timestamp discontinuities=0
+WARNING: afplay speech is ALSO far-end audio and should cancel; this harness cannot measure real near-end dictation preservation.

@@ -1,0 +1,11 @@
+output=Sceptre O34
+mic=MacBook Pro Microphone config=SupportedStreamConfig { channels: 1, sample_rate: SampleRate(48000), buffer_size: Range { min: 15, max: 4096 }, sample_format: F32 }; system=48kHz stereo; delay hint=None
+READY
+ref packet: frames=320 age=139.464ms
+ref packet: frames=320 age=119.471ms
+ref packet: frames=320 age=99.471ms
+RMS mic=0.019577 (-34.17dBFS) ref=0.180987 (-14.85dBFS) clean=0.002329 (-52.66dBFS)
+after 3s warmup: apparent ERLE/reduction=18.70dB (valid ERLE only if all sound is far-end); AEC CPU=19.708ms/audio-second
+dropped callback/chunks: mic=0 ref=0; zero-filled samples: mic=0 ref=0
+ref input: packets=1111, samples=355520, timestamp discontinuities=0
+WARNING: afplay speech is ALSO far-end audio and should cancel; this harness cannot measure real near-end dictation preservation.

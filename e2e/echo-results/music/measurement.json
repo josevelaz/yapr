@@ -1,0 +1,37 @@
+{
+  "aec_algorithm_latency_ms": 14,
+  "aec_cpu_ms_per_audio_second": 5.430901561337596,
+  "baseline_reference_rms": 0.0,
+  "capture_wall_ms": 25192,
+  "delay_correlation": 0.24938077722856397,
+  "delay_ms": 14,
+  "duration_s": 25.034625,
+  "echo": {
+    "active": true
+  },
+  "live_chunks_equal_full_recording": true,
+  "max_reference_age_ms": 73.1606663466664,
+  "max_worker_buffer_ms": 174.25809538690373,
+  "mean_worker_buffer_ms": 161.3114334526495,
+  "mic_dropped": 0,
+  "mic_missing": 86,
+  "model": "microsoft/mai-transcribe-2",
+  "music": "e2e/fixtures/echo-music.wav",
+  "music_reduction_db": 4.041841211815374,
+  "off": {
+    "text": "Okay, so here is the plan for tomorrow. First, we ship the dictation problem. Then, um, we write the review and check the comments. After that, we take the rest of the afternoon.",
+    "transcribe_ms": 853,
+    "wer": 0.1891891891891892
+  },
+  "on": {
+    "text": "Okay, so here is the plan for tomorrow. First, we ship the dictation puzzle to the printer. Then, um, we write the readme and check the page. After that, we take the rest of the afternoon.",
+    "transcribe_ms": 735,
+    "wer": 0.10810810810810811
+  },
+  "reference_dropped": 0,
+  "reference_missing": 2985,
+  "script": "Okay so here is the plan for tomorrow. First we ship the dictation helper to the team. Then, um, we write the README and check the numbers. After that we take the rest of the afternoon off.",
+  "speech_offset_samples": 131697,
+  "speech_playback_gain": 1.0,
+  "speech_region_level_change_db": -13.318391858619876
+}

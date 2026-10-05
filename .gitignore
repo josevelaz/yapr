@@ -1,0 +1,8 @@
+target/
+node_modules/
+dist/
+.DS_Store
+*.wav
+!e2e/fixtures/*.wav
+*.dylib
+e2e/security-results/control

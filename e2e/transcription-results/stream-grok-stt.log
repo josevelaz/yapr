@@ -1,0 +1,12 @@
+823 ms stream-start: 
+2680 ms transcript-partial: Okay, so here is the plan for tomorrow.
+3150 ms transcript-final: Okay, so here is the plan for tomorrow.
+6134 ms transcript-partial: Okay, so here is the plan for tomorrow. First, we ship the dictation helper to the team.
+6557 ms transcript-final: Okay, so here is the plan for tomorrow. First, we ship the dictation helper to the team.
+9990 ms transcript-partial: Okay, so here is the plan for tomorrow. First, we ship the dictation helper to the team. Then we write the README and check the numbers.
+10453 ms transcript-final: Okay, so here is the plan for tomorrow. First, we ship the dictation helper to the team. Then we write the README and check the numbers.
+13059 ms transcript-partial: Okay, so here is the plan for tomorrow. First, we ship the dictation helper to the team. Then we write the README and check the numbers. After that, we take the rest of the afternoon off.
+13059 ms transcript-final: Okay, so here is the plan for tomorrow. First, we ship the dictation helper to the team. Then we write the README and check the numbers. After that, we take the rest of the afternoon off.
+13060 ms finish: Okay, so here is the plan for tomorrow. First, we ship the dictation helper to the team. Then we write the README and check the numbers. After that, we take the rest of the afternoon off.
+stream_ms=13060
+final: Okay, so here is the plan for tomorrow. First, we ship the dictation helper to the team. Then we write the README and check the numbers. After that, we take the rest of the afternoon off.

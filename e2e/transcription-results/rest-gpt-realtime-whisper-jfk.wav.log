@@ -1,0 +1,2 @@
+transcribe_ms=366
+Unknown or unsupported AI Gateway model: openai/gpt-realtime-whisper is ineligible for Zero Data Retention (ZDR). This model retains data and cannot be used with ZDR configurations.

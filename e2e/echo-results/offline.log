@@ -1,0 +1,7 @@
+measured delay=50ms, correlation=0.8999
+{"cpu_ms_per_audio_second":1.414034325430434,"delay_ms":50,"erle_db":18.320305835185263,"lag_ms":14.0,"name":"external-moderate","speech_correlation":0.8189129204581398,"speech_gain_db":-2.460702064014327}
+{"cpu_ms_per_audio_second":1.4103916115248645,"delay_ms":50,"erle_db":18.820777625470843,"lag_ms":14.0,"name":"external-low","speech_correlation":0.8205594864805826,"speech_gain_db":-2.6764809830386134}
+{"cpu_ms_per_audio_second":1.2614786927704584,"delay_ms":50,"erle_db":17.766718411086067,"lag_ms":8.0,"name":"external-off","speech_correlation":0.8221075305748372,"speech_gain_db":-2.3681146309200494}
+{"cpu_ms_per_audio_second":15.006413052624676,"delay_ms":null,"erle_db":20.62727895068656,"lag_ms":14.0,"name":"automatic-moderate","speech_correlation":0.5366344924969833,"speech_gain_db":-11.149116129943115}
+{"cpu_ms_per_audio_second":1.970227994732612,"delay_ms":50,"erle_db":18.320305835185263,"lag_ms":14.0,"name":"live-estimator","speech_correlation":0.8189129204581398,"speech_gain_db":-2.460702064014327}
+live estimator delay=Some(50) correlation=0.9000

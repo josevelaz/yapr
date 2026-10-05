@@ -1,0 +1,27 @@
+{
+  "aec_algorithm_latency_ms": 14,
+  "aec_cpu_ms_per_audio_second": 3.5954049641246626,
+  "baseline_reference_rms": 0.0,
+  "capture_wall_ms": 25179,
+  "delay_correlation": 0.0,
+  "delay_ms": null,
+  "duration_s": 25.034625,
+  "echo": {
+    "active": false
+  },
+  "live_chunks_equal_full_recording": true,
+  "max_reference_age_ms": 73.42070832964964,
+  "max_worker_buffer_ms": 172.77434638526756,
+  "mean_worker_buffer_ms": 161.2683827562474,
+  "mic_dropped": 0,
+  "mic_missing": 86,
+  "model": "microsoft/mai-transcribe-2",
+  "music": "none",
+  "music_reduction_db": 0.0,
+  "reference_dropped": 0,
+  "reference_missing": 2910,
+  "script": "Okay so here is the plan for tomorrow. First we ship the dictation helper to the team. Then, um, we write the README and check the numbers. After that we take the rest of the afternoon off.",
+  "speech_offset_samples": 131619,
+  "speech_playback_gain": 1.0,
+  "speech_region_level_change_db": 0.0
+}

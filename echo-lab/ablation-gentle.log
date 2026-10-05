@@ -1,0 +1,13 @@
+timestamp alignment smoke: drift=-100ppm, irregular packets, max error=0.003730, missing=0
+timestamp alignment smoke: drift=+150ppm, irregular packets, max error=0.003728, missing=0
+speech-only control: corr/SNR/gain=(0.8739201910429035, 6.218425606383022, 0.8083338955888412), lag=224
+music: duration=22.877s room_gain=1.389 echo/speech=+6.00dB (active regions)
+  echo-only: ERLE=23.23dB (echo / total residual incl. noise); RMS mic=0.094061 (-20.53dBFS) clean=0.006486 (-43.76dBFS), measured 8.83s after 3s warmup
+  speech-active: RMS target=0.045000 mic=0.100368 clean=0.023541
+  preservation: correlation 0.4469 -> 0.5259; unscaled SNR -6.00 -> 1.41dB; least-squares speech gain=0.2753; output lag=224 samples (14.00ms)
+  AEC CPU=14.800ms/audio-second (1.480% of one core), total=0.338576s
+speech-like: duration=22.877s room_gain=1.284 echo/speech=+6.00dB (active regions)
+  echo-only: ERLE=29.07dB (echo / total residual incl. noise); RMS mic=0.085933 (-21.32dBFS) clean=0.003025 (-50.39dBFS), measured 8.83s after 3s warmup
+  speech-active: RMS target=0.045000 mic=0.100636 clean=0.037642
+  preservation: correlation 0.4517 -> 0.7791; unscaled SNR -6.00 -> 4.02dB; least-squares speech gain=0.6519; output lag=224 samples (14.00ms)
+  AEC CPU=15.278ms/audio-second (1.528% of one core), total=0.349507s

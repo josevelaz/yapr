@@ -1,0 +1,32 @@
+[package]
+name = "yapr"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = []
+e2e = []
+
+[dependencies]
+anyhow = "1"
+base64 = "0.23.1"
+block2 = "0.6"
+cpal = "0.18"
+crossbeam-channel = "0.5"
+dispatch2 = "0.3"
+hound = "3.5"
+libc = "0.2"
+objc2 = "0.6"
+objc2-app-kit = "0.3"
+objc2-av-foundation = { version = "0.3", default-features = false, features = ["std", "AVCaptureDevice", "AVMediaFormat", "block2"] }
+objc2-foundation = "0.3"
+objc2-quartz-core = "0.3"
+objc2-service-management = "0.3"
+security-framework = "3.7.0"
+screencapturekit = "11"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
+ureq = { version = "3", features = ["json"] }
+url = "2"
+webrtc-audio-processing = { version = "2.1", features = ["bundled", "experimental-aec3-config"] }

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "missing-key",
+    "reply": {
+      "startError": "No AI Gateway API key. Choose Set API Key in the Yapr menu."
+    }
+  },
+  {
+    "name": "cleanup",
+    "reply": {
+      "startError": "No AI Gateway API key. Choose Set API Key in the Yapr menu."
+    }
+  }
+]

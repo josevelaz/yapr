@@ -1,0 +1,38 @@
+capture: {"aec_algorithm_latency_ms":14,"aec_cpu_ms_per_audio_second":5.337070717056875,"baseline_reference_rms":0.0,"capture_wall_ms":25184,"delay_correlation":0.25954356481430174,"delay_ms":14,"duration_s":25.034625,"echo":{"active":true},"live_chunks_equal_full_recording":true,"max_reference_age_ms":76.36008333065547,"max_worker_buffer_ms":176.6518463846296,"mean_worker_buffer_ms":161.3757815149422,"mic_dropped":0,"mic_missing":86,"model":"microsoft/mai-transcribe-2","music":"e2e/fixtures/echo-music.wav","music_reduction_db":2.9660374755829544,"reference_dropped":0,"reference_missing":3126,"script":"Okay so here is the plan for tomorrow. First we ship the dictation helper to the team. Then, um, we write the README and check the numbers. After that we take the rest of the afternoon off.","speech_offset_samples":131700,"speech_playback_gain":0.35,"speech_region_level_change_db":-24.52197557771477}
+{
+  "aec_algorithm_latency_ms": 14,
+  "aec_cpu_ms_per_audio_second": 5.337070717056875,
+  "baseline_reference_rms": 0.0,
+  "capture_wall_ms": 25184,
+  "delay_correlation": 0.25954356481430174,
+  "delay_ms": 14,
+  "duration_s": 25.034625,
+  "echo": {
+    "active": true
+  },
+  "live_chunks_equal_full_recording": true,
+  "max_reference_age_ms": 76.36008333065547,
+  "max_worker_buffer_ms": 176.6518463846296,
+  "mean_worker_buffer_ms": 161.3757815149422,
+  "mic_dropped": 0,
+  "mic_missing": 86,
+  "model": "microsoft/mai-transcribe-2",
+  "music": "e2e/fixtures/echo-music.wav",
+  "music_reduction_db": 2.9660374755829544,
+  "off": {
+    "text": "Okay, so that's the end of patient one. Then we're going to do the two and we'll have to take break.",
+    "transcribe_ms": 1609,
+    "wer": 0.8108108108108109
+  },
+  "on": {
+    "text": "And we have the first image. We look at the first image again in our model. First, we make an additional image. We then do a quick view of the image. Now we have the big picture.",
+    "transcribe_ms": 892,
+    "wer": 0.918918918918919
+  },
+  "reference_dropped": 0,
+  "reference_missing": 3126,
+  "script": "Okay so here is the plan for tomorrow. First we ship the dictation helper to the team. Then, um, we write the README and check the numbers. After that we take the rest of the afternoon off.",
+  "speech_offset_samples": 131700,
+  "speech_playback_gain": 0.35,
+  "speech_region_level_change_db": -24.52197557771477
+}

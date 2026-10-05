@@ -1,0 +1,26 @@
+out/live-clean.wav: float32 mono 16000Hz, 352000 samples, 22.000000s, finite
+out/live-mic.wav: float32 mono 16000Hz, 352000 samples, 22.000000s, finite
+out/live-ref.wav: float32 mono 16000Hz, 352000 samples, 22.000000s, finite
+out/music-adaptive-clean.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-adaptive-echo.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-adaptive-mic.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-adaptive-ref.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-adaptive-target.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-clean.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-echo.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-mic.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-ref.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/music-target.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/play-music.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-adaptive-clean.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-adaptive-echo.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-adaptive-mic.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-adaptive-ref.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-adaptive-target.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-clean.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-echo.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-mic.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-ref.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-like-target.wav: float32 mono 16000Hz, 366026 samples, 22.876625s, finite
+out/speech-only-control.wav: float32 mono 16000Hz, 206026 samples, 12.876625s, finite
+Validated 25 WAV artifacts
