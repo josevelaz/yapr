@@ -1,0 +1,12 @@
+{
+  "name": "yapr",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "tsc -p .github/scripts/release/tsconfig.json && bun test test/release"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "typescript": "^7.0.2"
+  }
+}

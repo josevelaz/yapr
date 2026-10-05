@@ -1,0 +1,222 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Release operation to run
+        required: true
+        type: choice
+        options:
+          - cut
+          - backport
+          - draft
+          - publish
+          - cancel
+          - retire
+          - restore
+      version:
+        description: Canonical SemVer without a leading v (operation-specific)
+        required: false
+        type: string
+      release_line:
+        description: Release line name such as release/v1.0 (operation-specific)
+        required: false
+        type: string
+      commits:
+        description: Comma-separated full SHAs to backport (backport only)
+        required: false
+        type: string
+      confirmation:
+        description: Exact confirmation phrase for destructive operations
+        required: false
+        type: string
+      dry_run:
+        description: Plan and write artifacts without mutating the repository
+        required: false
+        type: boolean
+        default: true
+      resume_proof:
+        description: >-
+          Cancel-only prior-run artifact content used to resume a half-canceled
+          cancel; omit for a fresh cancel
+        required: false
+        type: string
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Guard
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: Require main and a main-only release environment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "Release must run from refs/heads/main (got: ${GITHUB_REF})." >&2
+            exit 1
+          fi
+
+          environment="$(gh api "repos/${GITHUB_REPOSITORY}/environments/release")"
+          policies="$(gh api "repos/${GITHUB_REPOSITORY}/environments/release/deployment-branch-policies")"
+
+          if ! printf '%s' "${environment}" | jq -e '
+            .can_admins_bypass == false
+            and .deployment_branch_policy.protected_branches == false
+            and .deployment_branch_policy.custom_branch_policies == true
+          ' >/dev/null; then
+            echo "Environment 'release' must disable administrator bypass and use custom branch protection. Fail closed." >&2
+            exit 1
+          fi
+
+          if ! printf '%s' "${policies}" | jq -e '
+            .total_count == 1
+            and (.branch_policies | length == 1)
+            and .branch_policies[0].name == "main"
+            and .branch_policies[0].type == "branch"
+          ' >/dev/null; then
+            echo "Environment 'release' must permit only the main branch. Fail closed." >&2
+            exit 1
+          fi
+
+          echo "Guard passed: refs/heads/main and main-only release environment."
+
+  execute:
+    name: Execute
+    needs: guard
+    runs-on: macos-15
+    environment: release
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      LIVE_DRAFT: ${{ inputs.operation == 'draft' && !inputs.dry_run }}
+    steps:
+      - name: Checkout approved commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Verify checkout matches dispatch SHA
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          if [ "${actual}" != "${GITHUB_SHA}" ]; then
+            echo "Checked-out HEAD (${actual}) does not match dispatch GITHUB_SHA (${GITHUB_SHA}). Fail closed." >&2
+            exit 1
+          fi
+          echo "Checkout verified: HEAD == ${GITHUB_SHA}"
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Validate
+        run: bun run validate
+
+      - name: Set up Rust
+        if: env.LIVE_DRAFT == 'true'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install build tools
+        if: env.LIVE_DRAFT == 'true'
+        run: brew install meson ninja
+
+      - name: Import Developer ID certificate and notary key
+        if: env.LIVE_DRAFT == 'true'
+        env:
+          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          NOTARY_KEY_P8_BASE64: ${{ secrets.NOTARY_KEY_P8_BASE64 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          for name in DEVELOPER_ID_P12_BASE64 DEVELOPER_ID_P12_PASSWORD NOTARY_KEY_P8_BASE64 NOTARY_KEY_ID NOTARY_ISSUER_ID; do
+            if [ -z "${!name}" ]; then
+              echo "Secret ${name} is missing from the release environment." >&2
+              exit 1
+            fi
+          done
+
+          keychain="${RUNNER_TEMP}/release.keychain-db"
+          keychain_password="$(openssl rand -hex 24)"
+          printf '%s' "${DEVELOPER_ID_P12_BASE64}" | base64 --decode >"${RUNNER_TEMP}/developer-id.p12"
+          security create-keychain -p "${keychain_password}" "${keychain}"
+          security set-keychain-settings -lut 3600 "${keychain}"
+          security unlock-keychain -p "${keychain_password}" "${keychain}"
+          security import "${RUNNER_TEMP}/developer-id.p12" -k "${keychain}" \
+            -P "${DEVELOPER_ID_P12_PASSWORD}" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "${keychain_password}" "${keychain}" >/dev/null
+          security list-keychains -d user -s "${keychain}" $(security list-keychains -d user | tr -d '"')
+          rm -f "${RUNNER_TEMP}/developer-id.p12"
+
+          identity="$(security find-identity -v -p codesigning "${keychain}" | sed -n 's/.*"\(Developer ID Application: .*\)"/\1/p' | head -1)"
+          if [ -z "${identity}" ]; then
+            echo "No Developer ID Application identity in the imported certificate." >&2
+            exit 1
+          fi
+
+          notary_key="${RUNNER_TEMP}/notary-key.p8"
+          printf '%s' "${NOTARY_KEY_P8_BASE64}" | base64 --decode >"${notary_key}"
+          {
+            echo "SIGN_IDENTITY=${identity}"
+            echo "NOTARY_KEY_PATH=${notary_key}"
+            echo "NOTARY_KEY_ID=${NOTARY_KEY_ID}"
+            echo "NOTARY_ISSUER_ID=${NOTARY_ISSUER_ID}"
+            echo "RELEASE_KEYCHAIN=${keychain}"
+          } >>"${GITHUB_ENV}"
+
+      - name: Configure release commit identity
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Run release CLI
+        env:
+          RELEASE_OPERATION: ${{ inputs.operation }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_LINE: ${{ inputs.release_line }}
+          RELEASE_COMMITS: ${{ inputs.commits }}
+          RELEASE_CONFIRMATION: ${{ inputs.confirmation }}
+          RELEASE_DRY_RUN: ${{ inputs.dry_run }}
+          RELEASE_RESUME_PROOF: ${{ inputs.resume_proof }}
+          RELEASE_OUTPUT_DIR: ${{ github.workspace }}/release-output
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bun .github/scripts/release/src/main.ts
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          if [ -n "${RELEASE_KEYCHAIN:-}" ]; then
+            security delete-keychain "${RELEASE_KEYCHAIN}" || true
+          fi
+          rm -f "${NOTARY_KEY_PATH:-/nonexistent}"
+
+      - name: Upload release artifacts
+        if: always() && hashFiles('release-output/**') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-output
+          path: release-output/
+          retention-days: 30
+          if-no-files-found: ignore
