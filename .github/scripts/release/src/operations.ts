@@ -166,8 +166,13 @@ async function collectNotes(run: CommandRunner, version: ReleaseVersion, line: s
     "",
     "## Install",
     "",
-    `Download \`${APP_NAME}-${versionString}.zip\`, unzip it, and move \`${APP_NAME}.app\` to Applications.`,
-    "It is signed with a Developer ID and notarized by Apple. Requires macOS 14 or later on Apple Silicon.",
+    `Download \`${APP_NAME}-${versionString}.zip\`, unzip it, and move \`${APP_NAME}.app\` to Applications. Requires macOS 14 or later on Apple Silicon.`,
+    "",
+    `${APP_NAME} is not notarized by Apple, so macOS blocks the first launch. Either open it once, then choose System Settings → Privacy & Security → Open Anyway, or run:`,
+    "",
+    "```sh",
+    `xattr -dr com.apple.quarantine /Applications/${APP_NAME}.app`,
+    "```",
     "",
   ].join("\n")
 }

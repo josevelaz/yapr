@@ -64,9 +64,7 @@ cat >"$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-TIMESTAMP="--timestamp=none"
-[[ "$IDENTITY" == "Developer ID Application"* ]] && TIMESTAMP="--timestamp"
-codesign --force --sign "$IDENTITY" --identifier "$BUNDLE_ID" --options runtime "$TIMESTAMP" \
+codesign --force --sign "$IDENTITY" --identifier "$BUNDLE_ID" --options runtime \
   --entitlements "$ROOT/app/Yapr.entitlements" "$APP"
 codesign --verify --strict "$APP"
 

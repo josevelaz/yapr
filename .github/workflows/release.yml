@@ -140,50 +140,16 @@ jobs:
         if: env.LIVE_DRAFT == 'true'
         run: brew install meson ninja
 
-      - name: Import Developer ID certificate and notary key
+      - name: Import release signing certificate
         if: env.LIVE_DRAFT == 'true'
         env:
-          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
-          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
-          NOTARY_KEY_P8_BASE64: ${{ secrets.NOTARY_KEY_P8_BASE64 }}
-          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
-          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          RELEASE_SIGNING_P12_BASE64: ${{ secrets.RELEASE_SIGNING_P12_BASE64 }}
+          RELEASE_SIGNING_P12_PASSWORD: ${{ secrets.RELEASE_SIGNING_P12_PASSWORD }}
         run: |
           set -euo pipefail
-          for name in DEVELOPER_ID_P12_BASE64 DEVELOPER_ID_P12_PASSWORD NOTARY_KEY_P8_BASE64 NOTARY_KEY_ID NOTARY_ISSUER_ID; do
-            if [ -z "${!name}" ]; then
-              echo "Secret ${name} is missing from the release environment." >&2
-              exit 1
-            fi
-          done
-
           keychain="${RUNNER_TEMP}/release.keychain-db"
-          keychain_password="$(openssl rand -hex 24)"
-          printf '%s' "${DEVELOPER_ID_P12_BASE64}" | base64 --decode >"${RUNNER_TEMP}/developer-id.p12"
-          security create-keychain -p "${keychain_password}" "${keychain}"
-          security set-keychain-settings -lut 3600 "${keychain}"
-          security unlock-keychain -p "${keychain_password}" "${keychain}"
-          security import "${RUNNER_TEMP}/developer-id.p12" -k "${keychain}" \
-            -P "${DEVELOPER_ID_P12_PASSWORD}" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k "${keychain_password}" "${keychain}" >/dev/null
-          security list-keychains -d user -s "${keychain}" $(security list-keychains -d user | tr -d '"')
-          rm -f "${RUNNER_TEMP}/developer-id.p12"
-
-          identity="$(security find-identity -v -p codesigning "${keychain}" | sed -n 's/.*"\(Developer ID Application: .*\)"/\1/p' | head -1)"
-          if [ -z "${identity}" ]; then
-            echo "No Developer ID Application identity in the imported certificate." >&2
-            exit 1
-          fi
-
-          notary_key="${RUNNER_TEMP}/notary-key.p8"
-          printf '%s' "${NOTARY_KEY_P8_BASE64}" | base64 --decode >"${notary_key}"
-          {
-            echo "SIGN_IDENTITY=${identity}"
-            echo "NOTARY_KEY_PATH=${notary_key}"
-            echo "NOTARY_KEY_ID=${NOTARY_KEY_ID}"
-            echo "NOTARY_ISSUER_ID=${NOTARY_ISSUER_ID}"
-            echo "RELEASE_KEYCHAIN=${keychain}"
-          } >>"${GITHUB_ENV}"
+          scripts/import-release-cert.sh "${keychain}"
+          echo "RELEASE_KEYCHAIN=${keychain}" >>"${GITHUB_ENV}"
 
       - name: Configure release commit identity
         run: |
@@ -210,7 +176,6 @@ jobs:
           if [ -n "${RELEASE_KEYCHAIN:-}" ]; then
             security delete-keychain "${RELEASE_KEYCHAIN}" || true
           fi
-          rm -f "${NOTARY_KEY_PATH:-/nonexistent}"
 
       - name: Upload release artifacts
         if: always() && hashFiles('release-output/**') != ''

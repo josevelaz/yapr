@@ -1,11 +1,11 @@
 ---
 title: Releases
-description: Build, sign, notarize, and publish Yapr.app with the manual Release workflow.
+description: Build, sign, and publish Yapr.app with the manual Release workflow.
 ---
 
 # Releases
 
-Releases use one manual `Release` workflow, a main-only `release` environment, immutable exact tags, and a movable major alias. Each GitHub Release carries `Yapr-X.Y.Z.zip`: the app signed with a Developer ID, notarized, and stapled.
+Releases use one manual `Release` workflow, a main-only `release` environment, immutable exact tags, and a movable major alias. Each GitHub Release carries `Yapr-X.Y.Z.zip`: the app signed with the self-signed "Yapr Release Signing" certificate. There is no paid Apple account, so releases are not notarized and users must approve the first launch (the release notes explain how). The stable certificate keeps users' microphone, Accessibility, and Keychain grants across updates.
 
 The maintainer starts each operation. Dry runs and explicit confirmation guard against unintended publication. The workflow uses only `GITHUB_TOKEN`; there is no second publish path.
 
@@ -23,16 +23,7 @@ Versions are canonical SemVer with no leading `v`: `1.0.0` or `1.0.0-rc.1`. The 
 ## One-time repository setup
 
 1. Create a `release` environment with no required reviewers, administrator bypass disabled, and a sole custom deployment branch policy of `main`.
-2. Add these secrets to the `release` environment:
-
-   | Secret | Value |
-   | --- | --- |
-   | `DEVELOPER_ID_P12_BASE64` | `base64 -i developer-id.p12` of your Developer ID Application certificate and private key |
-   | `DEVELOPER_ID_P12_PASSWORD` | Password used when exporting that `.p12` |
-   | `NOTARY_KEY_P8_BASE64` | `base64 -i AuthKey_XXXX.p8` of an App Store Connect API key (Developer access) |
-   | `NOTARY_KEY_ID` | That key's ID |
-   | `NOTARY_ISSUER_ID` | The App Store Connect issuer ID |
-
+2. Run `scripts/make-release-cert.sh` once. It creates the signing certificate in `~/.config/yapr-release` and stores it in the `release` environment as `RELEASE_SIGNING_P12_BASE64` and `RELEASE_SIGNING_P12_PASSWORD`. Back that folder up. A new certificate makes macOS ask every user for permissions again.
 3. Enable auto-merge and squash merge. Allow GitHub Actions to create pull requests so `backport` can open them.
 4. Enable Immutable Releases so published release tags cannot be moved or deleted.
 5. Keep branch rules compatible with workflow-created version commits and branch deletion. Do not create a ruleset that targets tags.
@@ -40,7 +31,7 @@ Versions are canonical SemVer with no leading `v`: `1.0.0` or `1.0.0-rc.1`. The 
 
 ## Operations
 
-Every operation accepts `dry_run`, which defaults to `true`. A dry run plans the work and writes artifacts without changing the repository, building, or notarizing. Always pass `--ref main`.
+Every operation accepts `dry_run`, which defaults to `true`. A dry run plans the work and writes artifacts without changing the repository or building. Always pass `--ref main`.
 
 ```bash
 gh workflow run Release --ref main \
@@ -55,7 +46,7 @@ Read the plan in the run summary, then re-run with `-f dry_run=false`. Dispatch 
 | --- | --- | --- |
 | `cut` | `version` (patch `0`) | Creates `release/vX.Y` from `main`. |
 | `backport` | `release_line`, `commits` | Cherry-picks main SHAs and opens a squash PR into the line. |
-| `draft` | `release_line`, `version` | Sets the Cargo version, builds, signs, and notarizes `Yapr-X.Y.Z.zip`, then pushes the version commit, tags, and creates a draft GitHub Release with the zip. Nothing is pushed if the build or notarization fails. |
+| `draft` | `release_line`, `version` | Sets the Cargo version, builds and signs `Yapr-X.Y.Z.zip`, then pushes the version commit, tags, and creates a draft GitHub Release with the zip. Nothing is pushed if the build fails. |
 | `publish` | `version`, `confirmation='publish <version>'` | Publishes the draft and moves major alias `X` for the highest stable of that major. |
 | `cancel` | `version`, `confirmation='cancel <version>'` | Deletes an unpublished draft and its exact tag. |
 | `retire` | `release_line`, `confirmation='retire <release_line>'` | Deletes a release branch. Published tags stay. |
@@ -73,4 +64,4 @@ Download the zip from the draft and test it before `publish`.
 
 ## Local packaging
 
-`scripts/package-release.sh VERSION OUTPUT.zip` is what `draft` runs. It needs `SIGN_IDENTITY` (a `Developer ID Application: …` identity in your keychain), `NOTARY_KEY_PATH`, `NOTARY_KEY_ID`, and `NOTARY_ISSUER_ID`.
+`scripts/package-release.sh VERSION OUTPUT.zip` is what `draft` runs. It signs with `Yapr Release Signing` unless `SIGN_IDENTITY` names another identity, and fails if the app ends up signed by anything else.

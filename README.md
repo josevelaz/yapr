@@ -28,8 +28,10 @@ shortcut (⌥Space) or menu ──► Yapr.app (Rust, AppKit)
 ## Download
 
 Get `Yapr-X.Y.Z.zip` from [Releases](https://github.com/josevelaz/yapr/releases), unzip it, move
-`Yapr.app` to Applications, and open it. Releases are signed and notarized. Then follow step 3
-below. Maintainers: see [docs/releases.md](docs/releases.md).
+`Yapr.app` to Applications, and open it. Releases are not notarized by Apple, so macOS blocks the
+first launch: choose System Settings → Privacy & Security → Open Anyway, or run
+`xattr -dr com.apple.quarantine /Applications/Yapr.app`. Then follow step 3 below. Maintainers:
+see [docs/releases.md](docs/releases.md).
 
 ## Build from source
 
