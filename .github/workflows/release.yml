@@ -95,7 +95,7 @@ jobs:
   execute:
     name: Execute
     needs: guard
-    runs-on: macos-15
+    runs-on: macos-26
     environment: release
     permissions:
       contents: write
