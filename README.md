@@ -1,5 +1,9 @@
 # Yapr
 
+> **Note:** This repository is moving to the `liatrio-labs` GitHub organization. Until the
+> transfer is complete, the Homebrew tap and Releases links below do not work. See
+> [docs/liatrio-labs-move.md](docs/liatrio-labs-move.md).
+
 A macOS menu bar app for dictation. Press a shortcut and speak. A floating bar shows that it is
 listening (and your words as you speak, with a streaming model). Press the shortcut again: the
 recording is transcribed through Vercel AI Gateway, cleaned up by a language model of your choice,
@@ -30,11 +34,11 @@ shortcut (⌥Space) or menu ──► Yapr.app (Rust, AppKit)
 With Homebrew:
 
 ```sh
-brew tap josevelaz/yapr https://github.com/josevelaz/yapr
-brew install --cask josevelaz/yapr/yapr
+brew tap liatrio-labs/yapr https://github.com/liatrio-labs/yapr
+brew install --cask liatrio-labs/yapr/yapr
 ```
 
-Or get `Yapr-X.Y.Z.zip` from [Releases](https://github.com/josevelaz/yapr/releases), unzip it, and
+Or get `Yapr-X.Y.Z.zip` from [Releases](https://github.com/liatrio-labs/yapr/releases), unzip it, and
 move `Yapr.app` to Applications. Either way, open it once. Releases are not notarized by Apple, so
 macOS blocks the first launch: choose System Settings → Privacy & Security → Open Anyway, or run
 `xattr -dr com.apple.quarantine /Applications/Yapr.app`. Then follow step 3 below. Maintainers:

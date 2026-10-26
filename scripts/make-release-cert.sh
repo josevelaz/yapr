@@ -2,7 +2,7 @@
 set -euo pipefail
 
 NAME="Yapr Release Signing"
-REPO="${REPO:-josevelaz/yapr}"
+REPO="${REPO:-liatrio-labs/yapr}"
 STORE="${YAPR_RELEASE_DIR:-$HOME/.config/yapr-release}"
 P12="$STORE/release-signing.p12"
 PASSWORD_FILE="$STORE/release-signing.password"
