@@ -166,11 +166,11 @@ jobs:
           RELEASE_DRY_RUN: ${{ inputs.dry_run }}
           RELEASE_RESUME_PROOF: ${{ inputs.resume_proof }}
           RELEASE_OUTPUT_DIR: ${{ github.workspace }}/release-output
-          # Compiled into the app by app/build.rs. Google sign-in is shown only when the
-          # client ID and the gateway key are both set; unset secrets build the BYOK-only app.
-          YAPR_GOOGLE_CLIENT_ID: 942649453876-a6qpsju8uvnn8v20lkjj98c2mmm51kn6.apps.googleusercontent.com
+          # Compiled into the app by app/build.rs. Google sign-in is shown only when all three
+          # are set; otherwise the release builds the bring-your-own-key app.
+          YAPR_GOOGLE_CLIENT_ID: 5720404858-untb41kcg6ljbejd59sc1rv1fa3ribvk.apps.googleusercontent.com
           YAPR_GOOGLE_CLIENT_SECRET: ${{ secrets.YAPR_GOOGLE_CLIENT_SECRET }}
-          YAPR_LIATRIO_GATEWAY_KEY: ${{ secrets.YAPR_LIATRIO_GATEWAY_KEY }}
+          YAPR_LIATRIO_RELAY_URL: ${{ vars.YAPR_LIATRIO_RELAY_URL }}
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
         run: bun .github/scripts/release/src/main.ts
