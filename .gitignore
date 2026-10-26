@@ -6,3 +6,4 @@ dist/
 !e2e/fixtures/*.wav
 *.dylib
 e2e/security-results/control
+client_secret*.json

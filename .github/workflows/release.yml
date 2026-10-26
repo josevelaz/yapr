@@ -138,7 +138,7 @@ jobs:
 
       - name: Install build tools
         if: env.LIVE_DRAFT == 'true'
-        run: brew install meson ninja
+        run: brew install meson ninja cmake
 
       - name: Import release signing certificate
         if: env.LIVE_DRAFT == 'true'
@@ -166,6 +166,11 @@ jobs:
           RELEASE_DRY_RUN: ${{ inputs.dry_run }}
           RELEASE_RESUME_PROOF: ${{ inputs.resume_proof }}
           RELEASE_OUTPUT_DIR: ${{ github.workspace }}/release-output
+          # Compiled into the app by app/build.rs. Google sign-in is shown only when all three
+          # are set; otherwise the release builds the bring-your-own-key app.
+          YAPR_GOOGLE_CLIENT_ID: 5720404858-untb41kcg6ljbejd59sc1rv1fa3ribvk.apps.googleusercontent.com
+          YAPR_GOOGLE_CLIENT_SECRET: ${{ secrets.YAPR_GOOGLE_CLIENT_SECRET }}
+          YAPR_LIATRIO_RELAY_URL: ${{ vars.YAPR_LIATRIO_RELAY_URL }}
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
         run: bun .github/scripts/release/src/main.ts
