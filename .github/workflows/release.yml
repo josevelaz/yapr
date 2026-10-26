@@ -138,7 +138,7 @@ jobs:
 
       - name: Install build tools
         if: env.LIVE_DRAFT == 'true'
-        run: brew install meson ninja
+        run: brew install meson ninja cmake
 
       - name: Import release signing certificate
         if: env.LIVE_DRAFT == 'true'

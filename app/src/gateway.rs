@@ -73,7 +73,6 @@ pub fn error(status: u16, body: &Value, access: &Access) -> String {
             "The liatrio.com relay rejected your Google sign-in. Sign in with Google again.".into()
         }
         401 | 403 => "AI Gateway rejected the key. Choose Set API Key in the Yapr menu.".into(),
-        413 => "The recording is too long to send. Try a shorter dictation.".into(),
         402 => "AI Gateway is out of credits. Add credits and try again.".into(),
         429 => "AI Gateway rate limited this request. Try again shortly.".into(),
         400 | 404 => format!(

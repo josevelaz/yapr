@@ -24,8 +24,8 @@ shortcut (⌥Space) or menu ──► Yapr.app (Rust, AppKit)
 - A [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) API key, or, in official release
   builds, a `liatrio.com` Google account (Sign in with Google sends requests through a relay
   that holds the AI Gateway key; see [server/README.md](server/README.md))
-- To build from source: Rust (`cargo`) and Homebrew `meson` and `ninja` (they build the WebRTC
-  audio library): `brew install meson ninja`
+- To build from source: Rust (`cargo`) and Homebrew `meson`, `ninja`, and `cmake` (they build
+  the WebRTC audio library and the Opus encoder): `brew install meson ninja cmake`
 
 ## Download
 
@@ -131,7 +131,9 @@ microphone and the bar says so once.
 - The API key is kept in your login Keychain (`Yapr AI Gateway`) and is only sent to AI Gateway.
 - Google sign-in keeps your verified email and a Google refresh token in the Keychain
   (`Yapr Google Sign-In`). While you are signed in, audio and text go to the liatrio.com relay,
-  which passes them to AI Gateway. The relay does not store them.
+  which passes them to AI Gateway. Each recording is compressed and uploaded to the relay's
+  private Vercel Blob store under a random name. The relay deletes it after it sends it to AI
+  Gateway, also when that fails.
 - Pasting puts the text on the clipboard, then sends ⌘V to the front app.
 - Yapr has no local server or open port, except during Google sign-in: it then listens on
   `127.0.0.1` for up to 3 minutes to receive Google's reply. It uses the hardened runtime, with
