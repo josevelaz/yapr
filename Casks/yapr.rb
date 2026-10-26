@@ -2,10 +2,10 @@ cask "yapr" do
   version "0.1.0"
   sha256 "fcac1fe8ff7d933261a5fffaffe27a8eb84818cb41e9274c70119b28e933a99d"
 
-  url "https://github.com/josevelaz/yapr/releases/download/#{version}/Yapr-#{version}.zip"
+  url "https://github.com/liatrio-labs/yapr/releases/download/#{version}/Yapr-#{version}.zip"
   name "Yapr"
   desc "Menu bar dictation through Vercel AI Gateway"
-  homepage "https://github.com/josevelaz/yapr"
+  homepage "https://github.com/liatrio-labs/yapr"
 
   depends_on arch: :arm64
   depends_on macos: :sonoma
