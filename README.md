@@ -22,7 +22,8 @@ shortcut (⌥Space) or menu ──► Yapr.app (Rust, AppKit)
 
 - macOS 14 or later on Apple Silicon
 - A [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) API key, or, in official release
-  builds, a `liatrio.com` Google account (Sign in with Google uses a shared key)
+  builds, a `liatrio.com` Google account (Sign in with Google sends requests through a relay
+  that holds the AI Gateway key; see [server/README.md](server/README.md))
 - To build from source: Rust (`cargo`) and Homebrew `meson` and `ninja` (they build the WebRTC
   audio library): `brew install meson ninja`
 
@@ -68,12 +69,12 @@ see [docs/releases.md](docs/releases.md).
    | Screen & System Audio Recording | Same; needed for Remove Computer Audio |
    | Accessibility | Needed to paste with ⌘V; without it Yapr only copies |
    | AI Gateway API Key | Asks for the key, checks it with AI Gateway, then keeps it in your Keychain |
-   | Sign in with Google… | Official release builds only. Opens Google sign-in in your browser. A `liatrio.com` account uses a shared AI Gateway key, so you need no key of your own. Click again to sign out |
+   | Sign in with Google… | Official release builds only. Opens Google sign-in in your browser. With a `liatrio.com` account, Yapr sends requests through the liatrio.com relay, so you need no key of your own. Live words are not shown while signed in. Click again to sign out |
 
    Everyone else, and every build from source, sets their own AI Gateway API Key. To build with
    Google sign-in, set `YAPR_GOOGLE_CLIENT_ID`, `YAPR_GOOGLE_CLIENT_SECRET` and
-   `YAPR_LIATRIO_GATEWAY_KEY` before you run `scripts/build-app.sh`. If the client ID or the
-   gateway key is not set, the row is not shown.
+   `YAPR_LIATRIO_RELAY_URL` before you run `scripts/build-app.sh`. If one of them is not set,
+   the row is not shown.
 
 ## Using it
 
@@ -128,7 +129,9 @@ microphone and the bar says so once.
 - In the release build, audio is sent only to AI Gateway while you dictate and is never written
   to disk. Test builds can save recordings; see Development below.
 - The API key is kept in your login Keychain (`Yapr AI Gateway`) and is only sent to AI Gateway.
-- Google sign-in keeps only your verified email in the Keychain (`Yapr Google Sign-In`).
+- Google sign-in keeps your verified email and a Google refresh token in the Keychain
+  (`Yapr Google Sign-In`). While you are signed in, audio and text go to the liatrio.com relay,
+  which passes them to AI Gateway. The relay does not store them.
 - Pasting puts the text on the clipboard, then sends ⌘V to the front app.
 - Yapr has no local server or open port, except during Google sign-in: it then listens on
   `127.0.0.1` for up to 3 minutes to receive Google's reply. It uses the hardened runtime, with
@@ -205,5 +208,6 @@ private key, choose **Allow**, not **Always Allow**, for each build.
 | `app/src/cleanup.rs`, `gateway.rs` | Streamed cleanup and shared gateway errors |
 | `app/src/key.rs`, `permissions.rs`, `overlay.rs` | Keychain key, macOS permissions, the bar |
 | `app/src/google.rs`, `id_token.rs` | Google sign-in and ID token checks |
+| `server/` | The liatrio.com relay (Vercel Functions) |
 | `scripts/` | Signing certificate and app build |
 | `e2e/` | End-to-end scripts, fixtures and results |

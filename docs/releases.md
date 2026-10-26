@@ -28,7 +28,7 @@ Versions are canonical SemVer with no leading `v`: `1.0.0` or `1.0.0-rc.1`. The 
 4. Enable Immutable Releases so published release tags cannot be moved or deleted.
 5. Keep branch rules compatible with workflow-created version commits and branch deletion. Do not create a ruleset that targets tags.
 6. Do not pre-create release branches or tags. The workflow creates every line it owns.
-7. Optional: for Sign in with Google, add the `release` environment secrets `YAPR_GOOGLE_CLIENT_SECRET` (from the Desktop OAuth client) and `YAPR_LIATRIO_GATEWAY_KEY` (the shared AI Gateway key). The public client ID is set in `release.yml`. Without the gateway key, releases build without Google sign-in. The shared key is readable by anyone with a copy of the app, so give it a budget cap or rate limit in AI Gateway.
+7. Optional: for Sign in with Google, deploy the relay in `server/` (see [server/README.md](../server/README.md)). Then add the `release` environment secret `YAPR_GOOGLE_CLIENT_SECRET` (from the Desktop OAuth client) and the `release` environment variable `YAPR_LIATRIO_RELAY_URL` (the relay's base URL, ending in `/api`). The public client ID is set in `release.yml`. Without both values, releases build without Google sign-in.
 
 ## Operations
 
