@@ -6,6 +6,7 @@
     "check": "tsc --noEmit -p . && bun test"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.2",
     "jose": "^6.2.13"
   },
   "devDependencies": {
