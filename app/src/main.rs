@@ -6,7 +6,9 @@ mod echo;
 #[cfg(feature = "e2e")]
 mod echo_test;
 mod gateway;
+mod google;
 mod hotkey;
+mod id_token;
 mod key;
 mod menu;
 mod models;
@@ -101,7 +103,8 @@ fn run_menu_bar() -> Result<(), String> {
         }
     });
     std::thread::spawn(|| {
-        if matches!(key::load(), Ok(None)) {
+        google::load();
+        if matches!(key::load(), Ok(None)) && google::shared_key().is_none() {
             overlay::show(State::Error(
                 "Finish setup from the Yapr icon in the menu bar.".into(),
             ));

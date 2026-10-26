@@ -34,6 +34,10 @@ fn read() -> Result<Option<String>, String> {
 }
 
 pub fn require() -> Result<String, String> {
+    crate::google::load();
+    if let Some(key) = crate::google::shared_key() {
+        return Ok(key.to_string());
+    }
     load()?.ok_or_else(|| MISSING.to_string())
 }
 

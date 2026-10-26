@@ -17,6 +17,7 @@ use objc2_foundation::{NSObject, NSObjectProtocol, NSPoint, NSRect, NSSize, NSSt
 use objc2_service_management::{SMAppService, SMAppServiceStatus};
 
 use crate::dictation::{self, Activity};
+use crate::google;
 use crate::hotkey;
 use crate::key;
 use crate::models::{self, Model};
@@ -73,6 +74,26 @@ define_class!(
                 return;
             };
             in_background(move || key::set(&text).map(|()| "API key saved.".to_string()));
+        }
+
+        #[unsafe(method(googleAccount:))]
+        fn google_account(&self, _sender: &NSMenuItem) {
+            match google::known_email() {
+                Some(email) => {
+                    if confirm(
+                        self.mtm(),
+                        "Sign Out of Google?",
+                        &format!(
+                            "Yapr stops using the {} shared key for {email}. Your own API key is used if you set one.",
+                            google::DOMAIN
+                        ),
+                        "Sign Out",
+                    ) {
+                        in_background(google::sign_out);
+                    }
+                }
+                None => in_background(google::sign_in),
+            }
         }
 
         #[unsafe(method(chooseTranscription:))]
@@ -281,7 +302,13 @@ impl Controller {
         let microphone = permissions::microphone() == Microphone::Granted;
         let system_audio = permissions::system_audio_granted();
         let accessibility = permissions::accessibility_granted();
-        let key = key::known_present();
+        let google_email = google::known_email();
+        let key = key::known_present() || google_email.is_some();
+        let key_tooltip = if google_email.is_some() {
+            "Using the shared key while you are signed in with Google"
+        } else {
+            "Kept in your macOS Keychain"
+        };
         let rows = [
             (
                 "Microphone",
@@ -309,7 +336,7 @@ impl Controller {
                 "Set…",
                 key,
                 sel!(setApiKey:),
-                "Kept in your macOS Keychain",
+                key_tooltip,
             ),
         ];
         for (title, missing, ready, action, tooltip) in rows {
@@ -320,6 +347,18 @@ impl Controller {
             };
             let item = self.checked(&title, Some(action), ready);
             item.setToolTip(Some(&NSString::from_str(tooltip)));
+            menu.addItem(&item);
+        }
+        if google::available() {
+            let (title, tooltip) = match &google_email {
+                Some(email) => (format!("Google: {email}"), "Click to sign out".to_string()),
+                None => (
+                    "Sign in with Google…".to_string(),
+                    format!("{} accounts get a shared AI Gateway key", google::DOMAIN),
+                ),
+            };
+            let item = self.checked(&title, Some(sel!(googleAccount:)), google_email.is_some());
+            item.setToolTip(Some(&NSString::from_str(&tooltip)));
             menu.addItem(&item);
         }
     }
@@ -464,6 +503,15 @@ fn run_modal(alert: &NSAlert, mtm: MainThreadMarker) -> NSModalResponse {
     let response = alert.runModal();
     app.deactivate();
     response
+}
+
+fn confirm(mtm: MainThreadMarker, title: &str, info: &str, action: &str) -> bool {
+    let alert = NSAlert::new(mtm);
+    alert.setMessageText(&NSString::from_str(title));
+    alert.setInformativeText(&NSString::from_str(info));
+    alert.addButtonWithTitle(&NSString::from_str(action));
+    alert.addButtonWithTitle(&NSString::from_str("Cancel"));
+    run_modal(&alert, mtm) == NSAlertFirstButtonReturn
 }
 
 fn ask_text(
