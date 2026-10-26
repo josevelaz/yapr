@@ -84,7 +84,7 @@ define_class!(
                         self.mtm(),
                         "Sign Out of Google?",
                         &format!(
-                            "Yapr stops using the {} shared key for {email}. Your own API key is used if you set one.",
+                            "Yapr stops using the {} AI Gateway relay for {email}. Your own API key is used if you set one.",
                             google::DOMAIN
                         ),
                         "Sign Out",
@@ -305,7 +305,7 @@ impl Controller {
         let google_email = google::known_email();
         let key = key::known_present() || google_email.is_some();
         let key_tooltip = if google_email.is_some() {
-            "Using the shared key while you are signed in with Google"
+            "Using the liatrio.com relay while you are signed in with Google"
         } else {
             "Kept in your macOS Keychain"
         };
@@ -354,7 +354,10 @@ impl Controller {
                 Some(email) => (format!("Google: {email}"), "Click to sign out".to_string()),
                 None => (
                     "Sign in with Google…".to_string(),
-                    format!("{} accounts get a shared AI Gateway key", google::DOMAIN),
+                    format!(
+                        "{} accounts use AI Gateway without their own key",
+                        google::DOMAIN
+                    ),
                 ),
             };
             let item = self.checked(&title, Some(sel!(googleAccount:)), google_email.is_some());

@@ -5,6 +5,7 @@ use serde::Serialize;
 use serde_json::{Value, json};
 
 use crate::audio::Recorder;
+use crate::gateway::Access;
 use crate::overlay::{self, State};
 use crate::settings::Settings;
 use crate::{cleanup, echo, key, menu, models, output, transcribe, transcribe_stream};
@@ -26,7 +27,7 @@ pub static MISSING_KEY: std::sync::atomic::AtomicBool = std::sync::atomic::Atomi
 struct Recording {
     recorder: Option<Recorder>,
     model: String,
-    key: String,
+    access: Access,
     stream: Option<transcribe_stream::Session>,
     stream_error: Option<String>,
     live: Arc<Mutex<String>>,
@@ -130,7 +131,7 @@ fn set_phase(phase: Phase) {
     menu::show_recording(recording);
 }
 
-fn require_key() -> Result<String, String> {
+fn require_key() -> Result<Access, String> {
     #[cfg(feature = "e2e")]
     if MISSING_KEY.load(std::sync::atomic::Ordering::Relaxed) {
         return Err(key::MISSING.into());
@@ -164,8 +165,8 @@ pub fn start(options: StartOptions) -> Result<(), String> {
 }
 
 fn begin(options: StartOptions) -> Result<(), String> {
-    let key = match require_key() {
-        Ok(key) => key,
+    let access = match require_key() {
+        Ok(access) => access,
         Err(error) => {
             set_phase(Phase::Idle);
             return Err(error);
@@ -188,11 +189,12 @@ fn begin(options: StartOptions) -> Result<(), String> {
         None => fixture_chunks(),
     };
     let mut stream_error = None;
-    let stream = if options.streaming {
+    // Vercel Functions cannot accept WebSockets, so the relay only offers REST transcription.
+    let stream = if options.streaming && !access.relayed() {
         let preview = live.clone();
         match transcribe_stream::Session::start(
             options.transcription_model.clone(),
-            key.clone(),
+            access.clone(),
             chunks,
             move |_, text| *preview.lock().unwrap() = text.to_string(),
         ) {
@@ -210,7 +212,7 @@ fn begin(options: StartOptions) -> Result<(), String> {
     set_phase(Phase::Recording(Box::new(Recording {
         recorder,
         model: options.transcription_model,
-        key,
+        access,
         stream,
         stream_error,
         live,
@@ -310,7 +312,7 @@ fn process(recording: Recording, options: StopOptions) -> Outcome {
         Some(text) => Ok(text),
         None => {
             overlay::show(State::Transcribing);
-            transcribe::transcribe(&samples, &recording.model, &recording.key).map_err(|error| {
+            transcribe::transcribe(&samples, &recording.model, &recording.access).map_err(|error| {
                 match stream_error.filter(|e| !e.is_empty()) {
                     Some(stream_error) => {
                         format!("Streaming failed: {stream_error} REST fallback failed: {error}")
@@ -355,7 +357,7 @@ fn process(recording: Recording, options: StopOptions) -> Outcome {
             &outcome.raw,
             &model,
             options.instructions.as_deref(),
-            &recording.key,
+            &recording.access,
             |text| overlay::show(State::Cleaning(text.to_string())),
         );
         timings["cleanup_ms"] = json!(started.elapsed().as_millis());

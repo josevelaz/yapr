@@ -40,19 +40,23 @@ fn wav(samples: &[f32]) -> Result<Vec<u8>, String> {
     Ok(output.into_inner())
 }
 
-pub fn transcribe(samples: &[f32], model: &str, key: &str) -> Result<String, String> {
+pub fn transcribe(
+    samples: &[f32],
+    model: &str,
+    access: &gateway::Access,
+) -> Result<String, String> {
     if samples.is_empty() {
         return Ok(String::new());
     }
     let mut response = gateway::agent(60)
-        .post("https://ai-gateway.vercel.sh/v4/ai/transcription-model")
-        .header("Authorization", format!("Bearer {key}"))
+        .post(access.url("/v4/ai/transcription-model"))
+        .header("Authorization", format!("Bearer {}", access.token))
         .header("ai-gateway-protocol-version", "0.0.1")
         .header("ai-transcription-model-specification-version", "4")
         .header("ai-model-id", model)
         .send_json(json!({"audio": STANDARD.encode(wav(samples)?), "mediaType": "audio/wav"}))
         .map_err(|_| "Could not reach AI Gateway for transcription. Check your connection and try again.")?;
-    gateway::check(&mut response, key)?;
+    gateway::check(&mut response, access)?;
     let body = response
         .body_mut()
         .read_json::<Value>()

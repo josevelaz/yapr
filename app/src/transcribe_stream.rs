@@ -11,20 +11,21 @@ use tungstenite::client::IntoClientRequest;
 use tungstenite::stream::MaybeTlsStream;
 use tungstenite::{Error, Message};
 
-use crate::{gateway, transcribe};
+use crate::gateway::{self, Access};
+use crate::transcribe;
 
 pub struct Session(JoinHandle<Result<String, String>>);
 
 impl Session {
     pub fn start(
         model: String,
-        key: String,
+        access: Access,
         chunks: Receiver<Vec<f32>>,
         on_part: impl FnMut(&str, &str) + Send + 'static,
     ) -> Result<Self, String> {
         std::thread::Builder::new()
             .name("transcription-stream".into())
-            .spawn(move || run(&model, &key, chunks, on_part))
+            .spawn(move || run(&model, &access, chunks, on_part))
             .map(Self)
             .map_err(|_| "Could not start streaming transcription.".into())
     }
@@ -36,7 +37,7 @@ impl Session {
     }
 }
 
-fn socket_error(error: Error, key: &str) -> String {
+fn socket_error(error: Error, access: &Access) -> String {
     match error {
         Error::Http(response) => {
             let body = response
@@ -44,7 +45,7 @@ fn socket_error(error: Error, key: &str) -> String {
                 .as_ref()
                 .and_then(|b| serde_json::from_slice::<Value>(b).ok())
                 .unwrap_or(Value::Null);
-            gateway::error(response.status().as_u16(), &body, key)
+            gateway::error(response.status().as_u16(), &body, access)
         }
         _ => "The AI Gateway transcription connection failed. Check your connection.".into(),
     }
@@ -52,11 +53,16 @@ fn socket_error(error: Error, key: &str) -> String {
 
 fn run(
     model: &str,
-    key: &str,
+    access: &Access,
     chunks: Receiver<Vec<f32>>,
     mut on_part: impl FnMut(&str, &str),
 ) -> Result<String, String> {
-    let mut url = url::Url::parse("wss://ai-gateway.vercel.sh/v4/ai/transcription-model").unwrap();
+    let key = &access.token;
+    let mut url = url::Url::parse(&access.url("/v4/ai/transcription-model"))
+        .map_err(|_| "Invalid AI Gateway address.")?;
+    let host = url.host_str().unwrap_or_default().to_string();
+    let port = url.port_or_known_default().unwrap_or(443);
+    let _ = url.set_scheme("wss");
     url.query_pairs_mut().append_pair("ai-model-id", model);
     let mut request = url
         .as_str()
@@ -80,7 +86,7 @@ fn run(
         "ai-transcription-model-specification-version",
         "4".parse().unwrap(),
     );
-    let addresses = ("ai-gateway.vercel.sh", 443)
+    let addresses = (host.as_str(), port)
         .to_socket_addrs()
         .map_err(|_| "Could not reach AI Gateway for streaming transcription.")?;
     let tcp = addresses
@@ -93,7 +99,7 @@ fn run(
         .map_err(|_| "Could not open transcription connection.")?;
     let (mut socket, _) = tungstenite::client_tls_with_config(request, tcp, None, None).map_err(
         |error| match error {
-            tungstenite::HandshakeError::Failure(error) => socket_error(error, key),
+            tungstenite::HandshakeError::Failure(error) => socket_error(error, access),
             _ => "Could not open AI Gateway streaming transcription.".into(),
         },
     )?;
@@ -106,7 +112,7 @@ fn run(
     }
     .map_err(|_| "Could not set the transcription timeout.")?;
     socket.send(Message::Text(json!({"type": "transcription-stream.start", "inputAudioFormat": {"type": "audio/pcm", "rate": 16000}}).to_string().into()))
-        .map_err(|e| socket_error(e, key))?;
+        .map_err(|e| socket_error(e, access))?;
     let mut done_at = None;
     let mut finals = String::new();
     // Some models (MAI) emit committed deltas plus an uncommitted partial, then one
@@ -122,7 +128,7 @@ fn run(
                         for bytes in transcribe::pcm(&samples).chunks(64 * 1024) {
                             socket
                                 .send(Message::Binary(bytes.to_vec().into()))
-                                .map_err(|e| socket_error(e, key))?;
+                                .map_err(|e| socket_error(e, access))?;
                         }
                     }
                     Err(TryRecvError::Empty) => break,
@@ -133,7 +139,7 @@ fn run(
                                     .to_string()
                                     .into(),
                             ))
-                            .map_err(|e| socket_error(e, key))?;
+                            .map_err(|e| socket_error(e, access))?;
                         done_at = Some(Instant::now());
                         break;
                     }
@@ -198,7 +204,7 @@ fn run(
                             Some("rate_limit_exceeded") => 429,
                             _ => 500,
                         };
-                        return Err(gateway::error(code, &part, key));
+                        return Err(gateway::error(code, &part, access));
                     }
                     _ => {}
                 }
@@ -222,7 +228,7 @@ fn run(
             }
             Err(Error::Io(error))
                 if matches!(error.kind(), ErrorKind::WouldBlock | ErrorKind::TimedOut) => {}
-            Err(error) => return Err(socket_error(error, key)),
+            Err(error) => return Err(socket_error(error, access)),
             _ => {}
         }
     }

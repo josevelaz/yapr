@@ -104,7 +104,7 @@ fn run_menu_bar() -> Result<(), String> {
     });
     std::thread::spawn(|| {
         google::load();
-        if matches!(key::load(), Ok(None)) && google::shared_key().is_none() {
+        if matches!(key::load(), Ok(None)) && google::known_email().is_none() {
             overlay::show(State::Error(
                 "Finish setup from the Yapr icon in the menu bar.".into(),
             ));
@@ -245,6 +245,11 @@ fn transcribe_file(path: &str, model: &str) -> Result<(), String> {
 fn stream_file(path: &str, model: &str) -> Result<(), String> {
     let samples = audio::load_wav(std::path::Path::new(path))?;
     let key = key::require()?;
+    if key.relayed() {
+        return Err(
+            "Streaming transcription is not available through the liatrio.com relay.".into(),
+        );
+    }
     let started = std::time::Instant::now();
     let (tx, rx) = std::sync::mpsc::channel();
     let session =
@@ -302,7 +307,7 @@ fn check_key_leaks(paths: &[&str]) -> Result<(), String> {
             Ok(bytes.windows(prefix.len()).any(|window| window == prefix))
         }
     }
-    let key = key::require()?;
+    let key = key::require()?.token;
     let prefix = &key.as_bytes()[..key.len().min(12)];
     for path in paths {
         if scan(std::path::Path::new(path), prefix)? {

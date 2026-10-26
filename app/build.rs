@@ -3,11 +3,11 @@ fn main() {
     println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift");
     println!("cargo:rerun-if-changed=build.rs");
 
-    // Optional release secrets. An unset or blank value leaves the feature out of the build.
+    // Optional release values. An unset or blank value leaves the feature out of the build.
     for name in [
         "YAPR_GOOGLE_CLIENT_ID",
         "YAPR_GOOGLE_CLIENT_SECRET",
-        "YAPR_LIATRIO_GATEWAY_KEY",
+        "YAPR_LIATRIO_RELAY_URL",
     ] {
         println!("cargo:rerun-if-env-changed={name}");
         let value = std::env::var(name).unwrap_or_default();

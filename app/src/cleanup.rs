@@ -24,7 +24,7 @@ pub fn cleanup(
     raw: &str,
     model: &str,
     instructions: Option<&str>,
-    key: &str,
+    access: &gateway::Access,
     mut on_text: impl FnMut(&str),
 ) -> Result<Cleaned, String> {
     let started = Instant::now();
@@ -36,8 +36,8 @@ pub fn cleanup(
         system.push_str(extra);
     }
     let mut response = gateway::agent(90)
-        .post("https://ai-gateway.vercel.sh/v1/chat/completions")
-        .header("Authorization", format!("Bearer {key}"))
+        .post(access.url("/v1/chat/completions"))
+        .header("Authorization", format!("Bearer {}", access.token))
         .send_json(json!({
             "model": model, "stream": true,
             "messages": [
@@ -46,7 +46,7 @@ pub fn cleanup(
             ]
         }))
         .map_err(|_| "Could not reach AI Gateway for cleanup. Your raw transcript was kept.")?;
-    gateway::check(&mut response, key)?;
+    gateway::check(&mut response, access)?;
     let mut reader = BufReader::new(response.body_mut().as_reader());
     let mut line = String::new();
     let mut data = String::new();
@@ -78,7 +78,7 @@ pub fn cleanup(
                 .map_err(|_| "AI Gateway returned unreadable cleanup text.")?;
             data.clear();
             if part.get("error").is_some() {
-                return Err(gateway::error(500, &part, key));
+                return Err(gateway::error(500, &part, access));
             }
             if let Some(delta) = part
                 .pointer("/choices/0/delta/content")

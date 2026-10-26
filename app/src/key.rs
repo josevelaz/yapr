@@ -2,6 +2,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use security_framework::passwords::{get_generic_password, set_generic_password};
 
+use crate::gateway::Access;
+
 const SERVICE: &str = "Yapr AI Gateway";
 const ACCOUNT: &str = "api-key";
 const NOT_FOUND: i32 = -25300;
@@ -33,12 +35,13 @@ fn read() -> Result<Option<String>, String> {
     }
 }
 
-pub fn require() -> Result<String, String> {
-    crate::google::load();
-    if let Some(key) = crate::google::shared_key() {
-        return Ok(key.to_string());
+pub fn require() -> Result<Access, String> {
+    if let Some(access) = crate::google::access()? {
+        return Ok(access);
     }
-    load()?.ok_or_else(|| MISSING.to_string())
+    load()?
+        .map(Access::direct)
+        .ok_or_else(|| MISSING.to_string())
 }
 
 pub fn set(key: &str) -> Result<(), String> {

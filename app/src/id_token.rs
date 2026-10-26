@@ -36,15 +36,19 @@ struct Claims {
     email_verified: bool,
 }
 
-/// Returns the account email when the token is a valid Google ID token for `client_id` from
-/// an account in `domain`.
+pub struct Verified {
+    pub email: String,
+    pub expires: u64,
+}
+
+/// Accepts only a valid Google ID token for `client_id` from an account in `domain`.
 pub fn verify(
     token: &str,
     jwks: &Jwks,
     client_id: &str,
     domain: &str,
     now: u64,
-) -> Result<String, String> {
+) -> Result<Verified, String> {
     let Some((signed, signature)) = token.rsplit_once('.') else {
         return Err("The Google ID token is malformed.".into());
     };
@@ -99,7 +103,10 @@ pub fn verify(
     if email.is_empty() {
         return Err("The Google ID token has no email address.".into());
     }
-    Ok(email)
+    Ok(Verified {
+        email,
+        expires: claims.exp,
+    })
 }
 
 fn decode(part: &str) -> Result<Vec<u8>, String> {
@@ -170,7 +177,7 @@ mod tests {
     }
 
     fn check(token: &str) -> Result<String, String> {
-        verify(token, &jwks("k1"), CLIENT, "liatrio.com", NOW)
+        verify(token, &jwks("k1"), CLIENT, "liatrio.com", NOW).map(|v| v.email)
     }
 
     #[test]
